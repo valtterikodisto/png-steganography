@@ -1,6 +1,6 @@
 # PNG Steganography
 
-Details
+Steganography with PNG files. This is a project for [Data Structures and Algorithms -course](https://github.com/TiraLabra/2019_loppukesa) at the University of Helsinki
 
 ## Links to documentation
 
