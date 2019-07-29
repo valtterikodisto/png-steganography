@@ -18,13 +18,13 @@ TL;DR <br/>
 
 > Hiding data in too light or too dark pixel will be hard
 
-There was a major problem with the decision to use sorting. I wanted to sort the individual pixel based on its RGB sum (R + G + B) so that the dark colors are first and light colors are last. However if I sorted first and then and changed the [LSB](https://en.wikipedia.org/wiki/Bit_numbering#Least_significant_bit) it could change the order of the pixels.
+There was a major problem with the decision to use sorting. I wanted to sort the individual pixel based on its RGB sum (R + G + B) so that the dark colors are first and light colors are last. However if I sorted first and then changed the [LSB](https://en.wikipedia.org/wiki/Bit_numbering#Least_significant_bit) it could change the order of the pixels.
 
 The solution I came up with RGB:
 
-R: **`1001 0100`** <= balance bits <br/>
-G: **`0001 0101`** <= balance bits <br/>
-B: `1011 01`**`00`** <= data bits <br/>
+R: `1001 0100` <= balance bits <br/>
+G: `0001 0101` <= balance bits <br/>
+B: `1011 0100` <= data bits <br/>
 
 I could use bits in red and green to balance bits so that the RGB sum will remain unchanged. But what if balance bits are too small or too big to balance change in data bits? I came up with a solution that I could lighten/darken red or green in pixels which it was too high/low.
 

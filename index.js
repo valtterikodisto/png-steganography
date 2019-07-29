@@ -1,1 +1,3 @@
-console.log("Hello");
+const app = require('./src/index')
+
+app.start()
