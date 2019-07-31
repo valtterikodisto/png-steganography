@@ -6,7 +6,13 @@ const app = {
     const options = ui.readOptions()
     console.log(options)
     const image = new Image(options.image)
-    console.log(image.png.width * image.png.height)
+
+    if (options.extract) {
+      image.extractData(options.key, options.output)
+    } else {
+      image.hideData(options.file, options.key)
+      image.writeToFile(options.output)
+    }
   }
 }
 

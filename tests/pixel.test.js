@@ -1,5 +1,5 @@
 const Pixel = require('../src/image/pixel')
-const MAX_DATABITS = 0b111
+const { MAX_DATABITS } = require('../config/index')
 
 describe('Too bright or too dark pixel is balanced correctly', () => {
   test('Normal but bright pixel remains intact', () => {
@@ -21,7 +21,7 @@ describe('Too bright or too dark pixel is balanced correctly', () => {
   })
 
   test('Too dark pixel is adjusted correctly', () => {
-    const pixel = new Pixel(2, 0, 0, 255, 0, 0)
+    const pixel = new Pixel(0, 0, 0, 255, 0, 0)
     pixel.adjustHighAndLow()
     expect(pixel.red + pixel.green).toBe(MAX_DATABITS)
   })
@@ -66,5 +66,12 @@ describe('Data is hidden correctly in a pixel', () => {
     pixel.hideData(0b11)
     expect(pixel.extractData()).toBe(0b11)
     expect(pixel.red + pixel.green + pixel.blue).toBe(red + green + blue)
+  })
+
+  test('In black pixel', () => {
+    const pixel = new Pixel(0, 0, 0, 0, 20, 0)
+    pixel.adjustHighAndLow()
+    pixel.hideData(0b11)
+    expect(pixel.rgbSum()).toEqual(MAX_DATABITS)
   })
 })

@@ -1,10 +1,4 @@
-/**
- * How large portion of 8-bit RGB blue's bits can be
- * used to hide data
- * @constant
- * @type {number}
- */
-const MAX_DATABITS = 0b111
+const { MAX_DATABITS } = require('../../config/index')
 
 class Pixel {
   /**
@@ -102,3 +96,4 @@ class Pixel {
 }
 
 module.exports = Pixel
+exports.MAX_DATABITS = MAX_DATABITS
