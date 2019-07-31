@@ -1,9 +1,10 @@
 const { PNG } = require('pngjs')
 const Pixel = require('./pixel')
 const { MAX_DATABITS } = require('../../config/index')
-const { split, combine, addEndingByte } = require('../parser/byteSplitter')
-const fileReader = require('../reader/fileReader')
+const fileParser = require('../parser/fileParser')
+const byteParser = require('../parser/byteParser')
 const fs = require('fs')
+const Deque = require('collections/deque')
 
 class Image {
   constructor(filePath) {
@@ -11,81 +12,50 @@ class Image {
     this.png = PNG.sync.read(data)
   }
 
-  hideData(filePath, keyPath) {
-    const maxSizeInBytes = (this.png.width * this.png.height * Math.log2(MAX_DATABITS + 1)) / 8 - 1
+  hideData(filePath, keyPath, outputName) {
+    const fileMaxSize = (this.png.width * this.png.height * Math.log2(MAX_DATABITS + 1)) / 8 - 1
 
-    let file = fileReader.read(filePath, maxSizeInBytes)
-    let key = fileReader.read(keyPath)
+    const file = byteParser.split(fileParser.parse(filePath, fileMaxSize), MAX_DATABITS, true)
+    const key = byteParser.split(fileParser.parse(keyPath), 0b1, false)
 
-    file = split(file, MAX_DATABITS)
-    file = addEndingByte(file, MAX_DATABITS)
-    key = split(key, 0b1)
-
-    const pixels = this.toSortedPixelArray(true)
+    const pixels = this.toSortedPixelDeque()
+    pixels.forEach(pixel => {
+      pixel.adjustHighAndLow()
+      this.replacePixelWith(pixel)
+    })
 
     for (let i = 0; i < file.length; i++) {
-      let pixel
-
-      if (key[i % key.length] === 1) {
-        pixel = pixels.pop()
-      } else {
-        pixel = pixels.shift()
-      }
-
+      const pixel = key[i % key.length] === 1 ? pixels.pop() : pixels.shift()
       pixel.hideData(file[i])
       this.replacePixelWith(pixel)
     }
+
+    this.writeToFile(outputName)
   }
 
-  extractData(keyPath, toFile) {
-    let key = fileReader.read(keyPath)
-    key = split(key, 0b1)
-
-    const pixels = this.toSortedPixelArray()
-    const p = pixels[0]
-
+  extractData(keyPath, outputName) {
+    const key = byteParser.split(fileParser.parse(keyPath), 0b1, false)
     const numberOfDataBits = Math.log2(MAX_DATABITS + 1)
 
-    const extractedData = []
-    let endingByteCount = 0
-    let i = 0
+    const pixels = this.toSortedPixelDeque()
+    const data = new Deque() // This needs to be changed to a appropriate data structure
 
-    while (true) {
-      let pixel
+    let endingByteCounter = 0
+    for (let i = 0; i < pixels.length; i++) {
+      const pixel = key[i % key.length] === 1 ? pixels.pop() : pixels.shift()
+      data.push(pixel.extractData())
+      endingByteCounter = data[i] == MAX_DATABITS ? endingByteCounter + 1 : 0
 
-      if (key[i % key.length] === 1) {
-        pixel = pixels.pop()
-      } else {
-        pixel = pixels.shift()
-      }
-
-      const data = pixel.extractData()
-
-      extractedData.push(data)
-
-      if (data === MAX_DATABITS) {
-        endingByteCount++
-      } else {
-        endingByteCount = 0
-      }
-
-      if (endingByteCount * numberOfDataBits === 8) {
-        break
-      }
-
-      i++
+      if (endingByteCounter >= 8 / numberOfDataBits) break
     }
 
-    const bytes = combine(extractedData, MAX_DATABITS)
-
-    const arr = new Uint8Array(bytes.length)
-    bytes.forEach((b, i) => (arr[i] = b))
-
-    fs.writeFileSync(toFile, Buffer.from(arr.buffer))
+    const extractedData = byteParser.combine(data, MAX_DATABITS, true)
+    fs.writeFileSync(outputName, extractedData)
   }
 
-  toSortedPixelArray(adjustHighAndLow) {
-    const pixelArray = []
+  // Deque and merge sort will be used here
+  toSortedPixelDeque() {
+    const deque = []
 
     for (let y = 0; y < this.png.height; y++) {
       for (let x = 0; x < this.png.width; x++) {
@@ -98,14 +68,12 @@ class Image {
           x,
           y
         )
-        if (adjustHighAndLow) pixel.adjustHighAndLow()
-        this.replacePixelWith(pixel)
 
-        pixelArray.push(pixel)
+        deque.push(pixel)
       }
     }
 
-    pixelArray.sort((a, b) => {
+    deque.sort((a, b) => {
       const difference = a.rgbSum() - b.rgbSum()
       if (difference !== 0) {
         return difference
@@ -114,7 +82,7 @@ class Image {
       }
     })
 
-    return pixelArray
+    return new Deque(deque)
   }
 
   replacePixelWith(pixel) {

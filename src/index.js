@@ -10,8 +10,7 @@ const app = {
     if (options.extract) {
       image.extractData(options.key, options.output)
     } else {
-      image.hideData(options.file, options.key)
-      image.writeToFile(options.output)
+      image.hideData(options.file, options.key, options.output)
     }
   }
 }
