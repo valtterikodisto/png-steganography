@@ -9,5 +9,6 @@ Steganography with PNG files. This is a project for [Data Structures and Algorit
 Weekly reports
 
 - [Week 1 report](./docs/week-1-report.md)
+- [Week 2 report](./docs/week-2-report.md)
 
 [Hour reports](./docs/hours.md)
