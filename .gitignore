@@ -1,4 +1,6 @@
 node_modules
 output
-images
+./images
 .prettierrc
+coverage
+docs/api

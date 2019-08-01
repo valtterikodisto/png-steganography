@@ -3,12 +3,12 @@ const { MAX_DATABITS } = require('../../config/index')
 class Pixel {
   /**
    * @constructor
-   * @param {number} red Red [0-255]
-   * @param {number} green Green [0-255]
-   * @param {number} blue Blue [0-255]
-   * @param {number} opacity Opacity [0-255]
-   * @param {number} x X-axis coordinate
-   * @param {number} y Y-axis coordinate
+   * @param {Number} red Red [0-255]
+   * @param {Number} green Green [0-255]
+   * @param {Number} blue Blue [0-255]
+   * @param {Number} opacity Opacity [0-255]
+   * @param {Number} x X-axis coordinate
+   * @param {Number} y Y-axis coordinate
    */
   constructor(red, green, blue, opacity, x, y) {
     this.red = red
@@ -22,7 +22,6 @@ class Pixel {
   /**
    * Adjust RGB red and green so that their sum is:
    * MAX_DATABITS <= (red + green) <= 255 - MAX_DATABITS
-   * @see MAX_DATABITS
    */
   adjustHighAndLow() {
     if (this.red + this.green > 510 - MAX_DATABITS) {
@@ -37,8 +36,7 @@ class Pixel {
   /**
    * Hides given data in the blue color and then balances
    * the RGB sum. Maximum value is based on MAX_DATABITS.
-   * @param {number} data Data that will be hidden in the pixel
-   * @see MAX_DATABITS
+   * @param {Number} data Data that will be hidden in the pixel
    */
   hideData(data) {
     const changeInBlueValue = data - (this.blue & MAX_DATABITS)
@@ -48,7 +46,7 @@ class Pixel {
 
   /**
    * Extracts and return data from blue color
-   * @returns {number} Extracted data
+   * @returns {Number} Extracted data
    * @example
    * extractData() // Returns 0 if blue is 0b11110000
    */
@@ -58,7 +56,7 @@ class Pixel {
 
   /**
    * Balances the change so that RGB sum will remain the same
-   * @param {number} change How much blue shifted due to data hiding
+   * @param {Number} change How much blue shifted due to data hiding
    * @example
    * // Added data shifted blue by -2 => Add 2 to red or green
    * balanceDataAddition(-2)
@@ -88,7 +86,7 @@ class Pixel {
 
   /**
    * Returns the sum of red, green and blue
-   * @returns {number} Sum of red, green and blue
+   * @returns {Number} Sum of red, green and blue
    */
   rgbSum() {
     return this.red + this.green + this.blue
@@ -96,4 +94,3 @@ class Pixel {
 }
 
 module.exports = Pixel
-exports.MAX_DATABITS = MAX_DATABITS

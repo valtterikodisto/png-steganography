@@ -7,11 +7,21 @@ const fs = require('fs')
 const Deque = require('collections/deque')
 
 class Image {
+  /**
+   * @constructor
+   * @param {String} filePath Absolute path to the image file
+   */
   constructor(filePath) {
     const data = fs.readFileSync(filePath)
     this.png = PNG.sync.read(data)
   }
 
+  /**
+   * Creates a new image with the hidden data inside of it
+   * @param {String} filePath Absolute path to the file that will be hidden
+   * @param {String} keyPath Absolute path to the key
+   * @param {String} outputName Name of the generated image file
+   */
   hideData(filePath, keyPath, outputName) {
     const fileMaxSize = (this.png.width * this.png.height * Math.log2(MAX_DATABITS + 1)) / 8 - 1
 
@@ -33,6 +43,11 @@ class Image {
     this.writeToFile(outputName)
   }
 
+  /**
+   * Extracts hidden data from the image and writes it to a file
+   * @param {String} keyPath Absolute path to the key
+   * @param {String} outputName Name of the generated file
+   */
   extractData(keyPath, outputName) {
     const key = byteParser.split(fileParser.parse(keyPath), 0b1, false)
     const numberOfDataBits = Math.log2(MAX_DATABITS + 1)
@@ -54,6 +69,10 @@ class Image {
   }
 
   // Deque and merge sort will be used here
+  /**
+   * Converts image to a deque of Pixels and sorts it by [Pixel's]{@link Pixel} RGB sum
+   * @returns {Deque}
+   */
   toSortedPixelDeque() {
     const deque = []
 
@@ -85,6 +104,10 @@ class Image {
     return new Deque(deque)
   }
 
+  /**
+   * Replaces image's pixel's data with the given [Pixels]{@link Pixel}
+   * @param {Pixel} pixel
+   */
   replacePixelWith(pixel) {
     const idx = (this.png.width * pixel.y + pixel.x) << 2
     this.png.data[idx] = pixel.red
@@ -92,6 +115,10 @@ class Image {
     this.png.data[idx + 2] = pixel.blue
   }
 
+  /**
+   * Writes PNG image to a file
+   * @param {String} fileName Name of the generated file
+   */
   writeToFile(fileName) {
     const buffer = PNG.sync.write(this.png)
     fs.writeFileSync(fileName, buffer)
